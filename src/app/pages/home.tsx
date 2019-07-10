@@ -1,19 +1,20 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { Tabs, Icon, Drawer } from 'antd';
+import {connect} from 'react-redux';
+import {Drawer, Icon, Tabs} from 'antd';
 import AccountInfo from 'components/AccountInfo';
 import ChannelList from 'components/ChannelList';
 import TransactionList from 'components/TransactionList';
+import MoneyStreamList from 'components/MoneyStreamList';
 import SendForm from 'components/SendForm';
 import InvoiceForm from 'components/InvoiceForm';
 import TransactionInfo from 'components/TransactionInfo';
 import ConnectionFailureModal from 'components/ConnectionFailureModal';
-import { AppState } from 'store/reducers';
+import {AppState} from 'store/reducers';
 import ChannelInfo from 'components/ChannelInfo';
-import { ChannelWithNode } from 'modules/channels/types';
-import { AnyTransaction } from 'modules/account/types';
-import { getAccountInfo } from 'modules/account/actions';
-import { getChannels } from 'modules/channels/actions';
+import {ChannelWithNode} from 'modules/channels/types';
+import {AnyTransaction} from 'modules/account/types';
+import {getAccountInfo} from 'modules/account/actions';
+import {getChannels} from 'modules/channels/actions';
 import './home.less';
 
 interface StateProps {
@@ -72,6 +73,16 @@ class HomePage extends React.Component<Props, State> {
             key="transactions"
           >
             <TransactionList onClick={this.handleTransactionClick} />
+          </Tabs.TabPane>
+          <Tabs.TabPane
+            tab={
+              <>
+                <Icon type="play-circle" /> Streams
+              </>
+            }
+            key="streams"
+          >
+            <MoneyStreamList onClick={this.handleMoneyStreamClick} />
           </Tabs.TabPane>
         </Tabs>
 
@@ -136,6 +147,10 @@ class HomePage extends React.Component<Props, State> {
 
   private handleTransactionClick = (tx: AnyTransaction) => {
     this.openDrawer(<TransactionInfo tx={tx} />, 'Transaction Details');
+  };
+
+  private handleMoneyStreamClick = () => {
+    // this.openDrawer(<MoneyStreamInfo moneyStream={moneyStream} />, 'Money Stream Details');
   };
 
   private retryConnection = () => {

@@ -22,16 +22,19 @@ import settings, {
 import rates, { RatesState, INITIAL_STATE as ratesInitialState } from 'modules/rates';
 import peers, { PeersState, INITIAL_STATE as peersInitialState } from 'modules/peers';
 import sign, { SignState, INITIAL_STATE as signInitialState } from 'modules/sign';
+import moneyStreams, {INITIAL_STATE as moneyStreamInitialState } from 'modules/money_streams';
 import onchain, {
   OnChainState,
   INITIAL_STATE as onchainInitialState,
 } from 'modules/onchain';
+import {MoneyStreamsState} from 'modules/money_streams/reducers';
 
 export interface AppState {
   crypto: CryptoState;
   sync: SyncState;
   node: NodeState;
   channels: ChannelsState;
+  moneyStreams: MoneyStreamsState;
   account: AccountState;
   payment: PaymentState;
   settings: SettingsState;
@@ -46,6 +49,7 @@ export const combineInitialState: Partial<AppState> = {
   sync: syncInitialState,
   node: nodeInitialState,
   channels: channelsInitialState,
+  moneyStreams: moneyStreamInitialState,
   account: accountInitialState,
   payment: paymentInitialState,
   settings: settingsInitialState,
@@ -60,6 +64,7 @@ export default combineReducers<AppState>({
   sync,
   node,
   channels,
+  moneyStreams,
   account,
   payment,
   settings,
