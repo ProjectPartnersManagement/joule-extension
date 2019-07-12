@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { AppState } from 'store/reducers';
 import MoneyStreamRow from 'components/MoneyStreamList/MoneyStreamRow';
+import {MoneyStream} from 'modules/money_streams/types';
 
 interface StateProps {
   moneyStreams: AppState['moneyStreams'];
@@ -11,7 +12,7 @@ interface DispatchProps {
 }
 
 interface OwnProps {
-  onClick?(): void;
+  onClick(moneyStream: MoneyStream): void;
 }
 
 type Props = StateProps & DispatchProps & OwnProps;
@@ -29,7 +30,7 @@ class MoneyStreamList extends React.Component<Props> {
         <MoneyStreamRow
             key={moneyStream.id}
             moneyStream={moneyStream}
-            onClick={() => alert('123')}
+            onClick={() => this.props.onClick(moneyStream)}
         />
     ));
   };

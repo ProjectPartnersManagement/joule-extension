@@ -16,6 +16,8 @@ import {AnyTransaction} from 'modules/account/types';
 import {getAccountInfo} from 'modules/account/actions';
 import {getChannels} from 'modules/channels/actions';
 import './home.less';
+import MoneyStreamInfo from 'components/MoneyStreamInfo';
+import {MoneyStream} from 'modules/money_streams/types';
 
 interface StateProps {
   nodeUrl: AppState['node']['url'];
@@ -149,8 +151,8 @@ class HomePage extends React.Component<Props, State> {
     this.openDrawer(<TransactionInfo tx={tx} />, 'Transaction Details');
   };
 
-  private handleMoneyStreamClick = () => {
-    // this.openDrawer(<MoneyStreamInfo moneyStream={moneyStream} />, 'Money Stream Details');
+  private handleMoneyStreamClick = (moneyStream: MoneyStream) => {
+    this.openDrawer(<MoneyStreamInfo moneyStreamId={moneyStream.id} />, 'Money Stream Details');
   };
 
   private retryConnection = () => {
