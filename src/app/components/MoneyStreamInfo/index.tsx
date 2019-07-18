@@ -25,17 +25,9 @@ interface DispatchProps {
 
 type Props = StateProps & DispatchProps & OwnProps;
 
-interface OwnState {
-    numberOfUnits: number;
-}
-
-class MoneyStreamInfo extends React.Component<Props, OwnState> {
+class MoneyStreamInfo extends React.Component<Props> {
     constructor(props: Props) {
         super(props);
-
-        this.state = {
-            numberOfUnits : 0
-        };
     }
 
     private getNumberOfUnits() {
@@ -51,6 +43,18 @@ class MoneyStreamInfo extends React.Component<Props, OwnState> {
                 <NodeInfo pubkey={moneyStream.to.pub_key} alias={moneyStream.to.alias}/>
                 <div className="configuration">
                     <Form className="money-stream-configuration" onSubmit={this.handleSubmit}>
+                        <Form.Item
+                            className="StreamTitle"
+                            label="Beschreibung"
+                        >
+                            <Input
+                                className="StreamTitle-input"
+                                value={moneyStream.title}
+                                type="text"
+                                onChange={this.handleChangeTitle}
+                            />
+                        </Form.Item>
+
                         <AmountField
                             label="Max Amount"
                             amount={moneyStream.max_amount.toString()}
@@ -133,9 +137,6 @@ class MoneyStreamInfo extends React.Component<Props, OwnState> {
                                 </Select>
                             </Form.Item>
                         </div>
-
-                        <h2 className="DescriptionHeading">Description</h2>
-                        <div className="StreamTitle">{moneyStream.title}</div>
                     </Form>
                 </div>
             </div>
@@ -177,6 +178,14 @@ class MoneyStreamInfo extends React.Component<Props, OwnState> {
         this.props.updateMoneyStream({
             id: this.props.moneyStream.id,
             payment_interval_unit: e.target.value as any
+        });
+    };
+
+    private handleChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log('title changed.');
+        this.props.updateMoneyStream({
+            id: this.props.moneyStream.id,
+            title: e.target.value
         });
     };
 }

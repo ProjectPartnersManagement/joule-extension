@@ -24,6 +24,7 @@ export const INITIAL_STATE: MoneyStreamsState = {
             amount_per_unit: 25,
             payment_interval: 5,
             payment_interval_unit: 'second',
+            state : 'open',
             created_at: 1562765210, // Unix timestamp
         },
     ]
@@ -34,6 +35,7 @@ export default function moneyStreamsReducers(
     action: any,
 ): MoneyStreamsState {
     const clonedMoneyStreams: MoneyStream[] = JSON.parse(JSON.stringify(state.moneyStreams));
+    let changedClonedMoneyStream: MoneyStream;
 
     switch (action.type) {
         // When the user updates a money stream through the Joule interface.
@@ -41,7 +43,7 @@ export default function moneyStreamsReducers(
             if (!action.payload.id) {
                 throw new Error('Update payload is missing the money stream ID.');
             }
-            const changedClonedMoneyStream = getChangedClonedMoneyStream(action.payload.id, clonedMoneyStreams);
+            changedClonedMoneyStream = getChangedClonedMoneyStream(action.payload.id, clonedMoneyStreams);
 
             const protectedProperties = ['to', 'created_at'];
 
@@ -60,16 +62,19 @@ export default function moneyStreamsReducers(
                 ...state,
                 moneyStreams: clonedMoneyStreams
             };
-        // TODO Implement opening a money stream
-        case types.OPEN_MONEY_STREAM:
+        case types.CREATE_MONEY_STREAM:
+            // Add the money stream to the list of money streams.
+            clonedMoneyStreams.push(action.payload);
             return {
                 ...state,
+                moneyStreams: clonedMoneyStreams
             };
-
-        // TODO Implement closing a money stream
-        case types.CLOSE_MONEY_STREAM:
+        case types.DELETE_MONEY_STREAM:
+            // Add the money stream to the list of money streams.
+            clonedMoneyStreams.splice(clonedMoneyStreams.findIndex(moneyStream => moneyStream.id === action.payload.id), 1);
             return {
                 ...state,
+                moneyStreams: clonedMoneyStreams
             };
     }
 

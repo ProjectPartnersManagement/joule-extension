@@ -8,15 +8,16 @@ export function updateMoneyStream(moneyStream: Partial<MoneyStream>) {
   };
 }
 
-export function openMoneyStream() {
+export function createMoneyStream(moneyStream: MoneyStream) {
   return {
-    type: types.OPEN_MONEY_STREAM,
+    type: types.CREATE_MONEY_STREAM,
+    payload: moneyStream
   };
 }
 
-export function closeMoneyStream(moneyStreamId: number) {
+export function deleteMoneyStream(moneyStream: MoneyStream) {
   return {
-    type: types.CLOSE_MONEY_STREAM,
-    payload: { moneyStreamId },
+    type: types.DELETE_MONEY_STREAM,
+    payload: moneyStream,
   };
 }

@@ -9,6 +9,7 @@ export interface MoneyStream {
   amount_per_unit: number;
   payment_interval: number;
   payment_interval_unit: 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year';
+  state : 'waitingForConfirmation' | 'open' | 'closed';
   created_at: number; // Unix timestamp
 }
 
@@ -23,9 +24,9 @@ export const intervalUnits = [
 ];
 
 enum MoneyStreamTypes {
-    OPEN_MONEY_STREAM = 'OPEN_MONEY_STREAM',
+    CREATE_MONEY_STREAM = 'CREATE_MONEY_STREAM',
     UPDATE_MONEY_STREAM = 'UPDATE_MONEY_STREAM',
-    CLOSE_MONEY_STREAM = 'CLOSE_MONEY_STREAM',
+    DELETE_MONEY_STREAM = 'DELETE_MONEY_STREAM',
 }
 
 export default MoneyStreamTypes;

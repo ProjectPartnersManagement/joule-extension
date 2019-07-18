@@ -1,6 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Drawer, Icon, Tabs} from 'antd';
+import shortid from 'shortid';
 import AccountInfo from 'components/AccountInfo';
 import ChannelList from 'components/ChannelList';
 import TransactionList from 'components/TransactionList';
@@ -18,6 +19,8 @@ import {getChannels} from 'modules/channels/actions';
 import './home.less';
 import MoneyStreamInfo from 'components/MoneyStreamInfo';
 import {MoneyStream} from 'modules/money_streams/types';
+import MoneyStreamForm from 'components/MoneyStreamForm';
+import {createMoneyStream} from 'modules/money_streams/actions';
 
 interface StateProps {
   nodeUrl: AppState['node']['url'];
@@ -27,6 +30,7 @@ interface StateProps {
 interface DispatchProps {
   getAccountInfo: typeof getAccountInfo;
   getChannels: typeof getChannels;
+  createMoneyStream: typeof createMoneyStream;
 }
 
 type Props = DispatchProps & StateProps;
@@ -52,7 +56,8 @@ class HomePage extends React.Component<Props, State> {
     return (
       <div className="Home">
         <AccountInfo
-          onSendClick={this.openSendForm}
+          onSendClick={() => this.openMoneyStreamForm()}
+          // onSendClick={this.openSendForm}
           onInvoiceClick={this.openInvoiceForm}
         />
         <Tabs defaultActiveKey="channels">
@@ -136,6 +141,43 @@ class HomePage extends React.Component<Props, State> {
     this.openDrawer(<SendForm close={this.closeDrawer} />, 'Send Payment');
   };
 
+  // TODO Connect interface with WebLN
+  private createEmptyMoneyStream(): MoneyStream {
+    const moneyStream: MoneyStream = {
+        id: shortid.generate(),
+        title: 'Custom Money Stream',
+        to: {
+            pub_key: 'PUBLIC_KEY',
+            addresses: [{
+                network: 'bitcoin',
+                addr: 'ADDRESS_1'
+            }],
+            alias: 'Burda Media',
+            color: '#00b0f0',
+            last_update: 1562765210,
+        },
+        max_amount: 10000,
+        used_amount: 5000,
+        amount_per_unit: 25,
+        payment_interval: 5,
+        payment_interval_unit: 'second',
+        state : 'waitingForConfirmation',
+        created_at: Math.round(Date.now() / 1000), // Unix timestamp
+    };
+    this.props.createMoneyStream(moneyStream);
+    return moneyStream;
+  }
+
+  private openMoneyStreamForm = () => {
+    const moneyStream = this.createEmptyMoneyStream();
+    this.openDrawer(<MoneyStreamForm moneyStreamId={moneyStream.id} close={this.closeDrawer} />, 'Create Money Stream');
+
+    // TODO Remove.
+    if(Math.random() === 0.4) {
+        this.openSendForm();
+    }
+  };
+
   private openInvoiceForm = () => {
     this.openDrawer(<InvoiceForm close={this.closeDrawer} />, 'Create Invoice');
   };
@@ -169,5 +211,6 @@ export default connect<StateProps, DispatchProps, {}, AppState>(
   {
     getAccountInfo,
     getChannels,
+    createMoneyStream
   },
 )(HomePage);
