@@ -9,6 +9,7 @@ if (shouldInject()) {
   injectScript();
 
   window.addEventListener('message', async ev => {
+      console.log(`Posted message registered`, ev);
     // Only accept messages from the current window
     if (ev.source !== window) {
       return;

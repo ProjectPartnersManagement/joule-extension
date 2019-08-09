@@ -24,7 +24,7 @@ export const INITIAL_STATE: MoneyStreamsState = {
             amount_per_unit: 25,
             payment_interval: 5,
             payment_interval_unit: 'second',
-            state : 'open',
+            state: 'open',
             created_at: 1562765210, // Unix timestamp
         },
     ]
@@ -65,6 +65,7 @@ export default function moneyStreamsReducers(
         case types.CREATE_MONEY_STREAM:
             // Add the money stream to the list of money streams.
             clonedMoneyStreams.push(action.payload);
+            console.log('Money stream created.', action.payload);
             return {
                 ...state,
                 moneyStreams: clonedMoneyStreams
@@ -75,6 +76,12 @@ export default function moneyStreamsReducers(
             return {
                 ...state,
                 moneyStreams: clonedMoneyStreams
+            };
+        // Used for retrieving the money streams from the chrome cloud storage. "Set" means setting the values from the cache in the app.
+        case types.SET_SYNCED_MONEY_STREAMS:
+            return {
+                ...state,
+                moneyStreams: action.payload
             };
     }
 

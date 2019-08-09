@@ -1,7 +1,7 @@
 import qs from 'query-string';
-import { browser, Runtime } from 'webextension-polyfill-ts';
-import { OriginData } from 'utils/prompt';
-import { PROMPT_TYPE } from '../webln/types';
+import {browser, Runtime} from 'webextension-polyfill-ts';
+import {OriginData} from 'utils/prompt';
+import {PROMPT_TYPE} from '../webln/types';
 import getNodeInfo from './getNodeInfo';
 
 interface PromptRequest {

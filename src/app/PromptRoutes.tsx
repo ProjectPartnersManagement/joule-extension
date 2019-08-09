@@ -9,6 +9,7 @@ import PaymentPrompt from 'prompts/payment';
 import InvoicePrompt from 'prompts/invoice';
 import SignPrompt from 'prompts/sign';
 import VerifyPrompt from 'prompts/verify';
+import MoneyStreamPrompt from 'prompts/moneyStream';
 import { getPromptType } from 'utils/prompt';
 import { AppState } from 'store/reducers';
 
@@ -39,6 +40,7 @@ class Routes extends React.Component<Props> {
         <Route path="/onboarding" exact component={OnboardingPrompt} />
         <Route path="/authorize" exact component={AuthorizePrompt} />
         <Route path="/payment" exact component={PaymentPrompt} />
+        <Route path="/moneyStream" exact component={MoneyStreamPrompt} />
         <Route path="/invoice" exact component={InvoicePrompt} />
         <Route path="/sign" exact component={SignPrompt} />
         <Route path="/verify" exact component={VerifyPrompt} />

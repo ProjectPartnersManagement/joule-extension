@@ -21,3 +21,10 @@ export function deleteMoneyStream(moneyStream: MoneyStream) {
     payload: moneyStream,
   };
 }
+
+export function setSyncedMoneyStreams(moneyStreams: MoneyStream[]) {
+  return {
+    type: types.SET_SYNCED_MONEY_STREAMS,
+    payload: moneyStreams,
+  };
+}

@@ -5,7 +5,7 @@ import MoneyStreamRow from 'components/MoneyStreamList/MoneyStreamRow';
 import {MoneyStream} from 'modules/money_streams/types';
 
 interface StateProps {
-  moneyStreams: AppState['moneyStreams'];
+  moneyStreams: AppState['moneyStreams']['moneyStreams'];
 }
 
 interface DispatchProps {
@@ -26,7 +26,7 @@ class MoneyStreamList extends React.Component<Props> {
   }
 
   private renderMoneyStreamRows = () => {
-    return this.props.moneyStreams.moneyStreams.map(moneyStream => (
+    return this.props.moneyStreams.map(moneyStream => (
         <MoneyStreamRow
             key={moneyStream.id}
             moneyStream={moneyStream}
@@ -38,6 +38,6 @@ class MoneyStreamList extends React.Component<Props> {
 
 export default connect<StateProps, DispatchProps, OwnProps, AppState>(
   state => ({
-    moneyStreams: state.moneyStreams,
+    moneyStreams: state.moneyStreams.moneyStreams,
   }),
 )(MoneyStreamList);

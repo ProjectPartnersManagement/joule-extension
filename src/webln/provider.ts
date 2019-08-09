@@ -1,12 +1,14 @@
 import {
-  WebLNProvider,
-  GetInfoResponse,
-  SendPaymentResponse,
-  RequestInvoiceArgs,
-  RequestInvoiceResponse,
-  SignMessageResponse,
+    GetInfoResponse,
+    RequestInvoiceArgs,
+    RequestInvoiceResponse,
+    SendPaymentResponse,
+    SignMessageResponse,
+    WebLNProvider,
 } from 'webln';
-import { PROMPT_TYPE } from './types';
+import {PROMPT_TYPE} from './types';
+import {MoneyStream} from "modules/money_streams/types";
+import shortid from "shortid";
 
 export default class JouleWebLNProvider implements WebLNProvider {
   private isEnabled: boolean = false;
@@ -55,6 +57,37 @@ export default class JouleWebLNProvider implements WebLNProvider {
       PROMPT_TYPE.INVOICE,
       args,
     );
+  }
+
+  async makeMoneyStream(preFilledMoneyStream: Partial<MoneyStream>) {
+      // TODO Connect interface with WebLN
+          const moneyStream: MoneyStream = {
+              id: shortid.generate(),
+              title: 'Custom Money Stream',
+              to: {
+                  pub_key: 'PUBLIC_KEY',
+                  addresses: [{
+                      network: 'bitcoin',
+                      addr: 'ADDRESS_1'
+                  }],
+                  alias: 'Burda Media',
+                  color: '#00b0f0',
+                  last_update: 1562765210,
+              },
+              max_amount: 10000,
+              used_amount: 5000,
+              amount_per_unit: 25,
+              payment_interval: 5,
+              payment_interval_unit: 'second',
+              created_at: Math.round(Date.now() / 1000), // Unix timestamp
+              ...preFilledMoneyStream,
+              state : 'waitingForConfirmation',
+          };
+
+      return this.promptUser<MoneyStreamResponse, MoneyStreamArgs>(
+          PROMPT_TYPE.MONEYSTREAM, {
+          moneyStream,
+      });
   }
 
   async signMessage(message: string) {
@@ -113,4 +146,12 @@ export default class JouleWebLNProvider implements WebLNProvider {
       window.addEventListener('message', handleWindowMessage);
     });
   }
+}
+
+export interface MoneyStreamResponse {
+    moneyStream: MoneyStream;
+}
+
+export interface MoneyStreamArgs {
+    moneyStream: MoneyStream;
 }
