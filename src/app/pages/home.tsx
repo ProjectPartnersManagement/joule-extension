@@ -154,7 +154,7 @@ class HomePage extends React.Component<Props, State> {
   };
 
   private handleMoneyStreamClick = (moneyStream: MoneyStream) => {
-    this.openDrawer(<MoneyStreamInfo moneyStreamId={moneyStream.id} />, 'Money Stream Details');
+    this.openDrawer(<MoneyStreamInfo moneyStreamId={moneyStream.id} onDelete={this.closeDrawer} />, 'Money Stream Details');
   };
 
   private retryConnection = () => {

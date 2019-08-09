@@ -5,29 +5,7 @@ export interface MoneyStreamsState {
 }
 
 export const INITIAL_STATE: MoneyStreamsState = {
-    moneyStreams: [
-        {
-            id: 'abcdefg',
-            title: 'Playboy.de',
-            to: {
-                pub_key: 'PUBLIC_KEY',
-                addresses: [{
-                    network: 'bitcoin',
-                    addr: 'ADDRESS_1'
-                }],
-                alias: 'Burda Media',
-                color: '#00b0f0',
-                last_update: 1562765210,
-            },
-            max_amount: 10000,
-            used_amount: 5000,
-            amount_per_unit: 25,
-            payment_interval: 5,
-            payment_interval_unit: 'second',
-            state: 'open',
-            created_at: 1562765210, // Unix timestamp
-        },
-    ]
+    moneyStreams: []
 };
 
 export default function moneyStreamsReducers(

@@ -1,7 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import classnames from 'classnames';
-import {Tooltip} from 'antd';
+import {Icon, Tooltip} from 'antd';
 import Identicon from 'components/Identicon';
 import {getNodeChain} from 'modules/node/selectors';
 import './MoneyStreamRow.less';
@@ -27,6 +27,21 @@ class TransactionRow extends React.Component<Props> {
       onClick,
     } = this.props;
 
+    let stateIcon: JSX.Element;
+    switch(this.getStatus(moneyStream)) {
+        case 'waiting-for-confirmation':
+            stateIcon = <Icon className={`state-icon ${this.getStatus(moneyStream)}`} type="question-circle" />;
+            break;
+        case 'closed':
+            stateIcon = <Icon className={`state-icon ${this.getStatus(moneyStream)}`} type="close-circle" />;
+            break;
+        default:
+        case 'open':
+            // No need to show an icon if the stream is open. This is the default.
+            stateIcon = <span/>;
+            break;
+    }
+
     return (
       <div
         className={classnames('TransactionRow', onClick && 'is-clickable')}
@@ -34,8 +49,9 @@ class TransactionRow extends React.Component<Props> {
       >
         <div className="TransactionRow-avatar">
           <Identicon className="TransactionRow-avatar-img" pubkey={moneyStream.to.pub_key} />
-          <Tooltip title={this.getStatus(moneyStream)}>
+          <Tooltip title={this.getStatusTooltip(moneyStream)}>
             <div className={`TransactionRow-avatar-status is-${this.getStatus(moneyStream)}`} />
+              {stateIcon}
           </Tooltip>
         </div>
         <div className="TransactionRow-info">
@@ -55,12 +71,27 @@ class TransactionRow extends React.Component<Props> {
   };
 
   private getStatus(moneyStream: MoneyStream) {
-    if(moneyStream.max_amount > moneyStream.used_amount) {
+    if(moneyStream.state === 'waitingForConfirmation') {
+        return 'waiting-for-confirmation'
+    }
+    else if(moneyStream.max_amount > moneyStream.used_amount) {
       return 'open';
     }
     else {
       return 'closed';
     }
+  }
+
+  private getStatusTooltip(moneyStream: MoneyStream) {
+      switch(this.getStatus(moneyStream)) {
+          case 'waiting-for-confirmation':
+              return 'Waiting for confirmation';
+          case 'closed':
+              return 'Stream closed';
+          default:
+          case 'open':
+              return 'Stream open';
+      }
   }
 }
 

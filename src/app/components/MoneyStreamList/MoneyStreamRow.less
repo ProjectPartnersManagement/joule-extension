@@ -59,30 +59,15 @@
       }
     }
 
-    &-status {
+    .state-icon {
       position: absolute;
       bottom: 0.1rem;
       right: 0.1rem;
       width: 0.8rem;
       height: 0.8rem;
       border-radius: 100%;
-      box-shadow: 0 0 0 3px #fff;
-
-      &.is-complete {
-        background: @success-color;
-      }
-
-      &.is-pending {
-        background: @warning-color;
-      }
-
-      &.is-rejected {
-        background: @error-color;
-      }
-
-      &.is-expired {
-        background: #aaa;
-      }
+      box-shadow: none;
+      background: #fff;
     }
   }
 

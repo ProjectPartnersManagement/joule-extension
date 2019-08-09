@@ -61,7 +61,6 @@ class MoneyStreamPrompt extends React.Component<Props, OwnState> {
                 beforeReject={this.handleReject}
             >
                 <MoneyStreamInfo moneyStreamId={this.state.moneyStreamId} key={this.state.moneyStreamId}/>
-                <input type="button" onClick={this.createMoneyStream} value="Create Money Stream" />
             </PromptTemplate>
         );
     }

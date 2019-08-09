@@ -3,12 +3,12 @@ import {connect} from 'react-redux';
 import {AppState} from 'store/reducers';
 import './style.less';
 import {intervalUnits, MoneyStream} from 'modules/money_streams/types';
-import {Form, Icon, Input, Select, Tooltip} from 'antd';
+import {Button, Form, Icon, Input, Select, Tooltip} from 'antd';
 import Unit from 'components/Unit';
 import {Link} from 'react-router-dom';
 import AmountField from 'components/AmountField';
 import NodeInfo from "components/PromptTemplate/NodeInfo";
-import {updateMoneyStream} from 'modules/money_streams/actions';
+import {deleteMoneyStream, updateMoneyStream} from 'modules/money_streams/actions';
 
 interface StateProps {
     account: AppState['account']['account'];
@@ -17,10 +17,12 @@ interface StateProps {
 
 interface OwnProps {
     moneyStreamId: MoneyStream['id'];
+    onDelete?: () => void;
 }
 
 interface DispatchProps {
     updateMoneyStream: typeof updateMoneyStream;
+    deleteMoneyStream: typeof deleteMoneyStream;
 }
 
 type Props = StateProps & DispatchProps & OwnProps;
@@ -37,6 +39,10 @@ class MoneyStreamInfo extends React.Component<Props> {
     render() {
         const {moneyStream, account} = this.props;
         const blockchainBalance = account ? account.blockchainBalance : 'unknown';
+
+        if (!moneyStream) {
+            return (<div className="MoneyStreamInfo"></div>);
+        }
 
         return (
             <div className="MoneyStreamInfo">
@@ -137,6 +143,18 @@ class MoneyStreamInfo extends React.Component<Props> {
                                 </Select>
                             </Form.Item>
                         </div>
+
+                        {moneyStream.state === 'waitingForConfirmation' ?
+                        <Form.Item>
+                            <Button type="default" size="large" block onClick={this.handleConfirm}>
+                                Confirm
+                            </Button>
+                        </Form.Item> : ''}
+                        <Form.Item>
+                            <Button type="danger" size="large" block ghost onClick={this.handleDelete}>
+                                Delete
+                            </Button>
+                        </Form.Item>
                     </Form>
                 </div>
             </div>
@@ -148,6 +166,7 @@ class MoneyStreamInfo extends React.Component<Props> {
     };
 
     private handleChangeMaxAmount = (amount: string) => {
+        if (this.props.moneyStream.max_amount.toString() === amount) return;
         console.log(`max_amount changed.`);
 
         this.props.updateMoneyStream({
@@ -157,6 +176,8 @@ class MoneyStreamInfo extends React.Component<Props> {
     };
 
     private handleChangeAmountPerUnit = (amount: string) => {
+        if (this.props.moneyStream.amount_per_unit.toString() === amount) return;
+
         console.log('amount_per_unit changed.');
 
         this.props.updateMoneyStream({
@@ -188,14 +209,30 @@ class MoneyStreamInfo extends React.Component<Props> {
             title: e.target.value
         });
     };
+
+    private handleConfirm = () => {
+        console.log('Stream confirmed.');
+        this.props.updateMoneyStream({
+            id: this.props.moneyStream.id,
+            state: 'open'
+        });
+    };
+
+    private handleDelete = () => {
+        console.log('Money stream deletion triggered.');
+
+        if (this.props.onDelete) this.props.onDelete();
+        this.props.deleteMoneyStream(this.props.moneyStream);
+    };
 }
 
 export default connect<StateProps, DispatchProps, OwnProps, AppState>(
     (state, ownProps) => ({
         account: state.account.account,
-        moneyStream : state.moneyStreams.moneyStreams.find(moneyStream => moneyStream.id === ownProps.moneyStreamId) as MoneyStream
+        moneyStream: state.moneyStreams.moneyStreams.find(moneyStream => moneyStream.id === ownProps.moneyStreamId) as MoneyStream,
     }),
     {
-        updateMoneyStream
+        updateMoneyStream,
+        deleteMoneyStream
     }
 )(MoneyStreamInfo);
