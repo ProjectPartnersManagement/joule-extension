@@ -18,6 +18,7 @@ interface StateProps {
 interface OwnProps {
     moneyStreamId: MoneyStream['id'];
     onDelete?: () => void;
+    hideConfirm?: boolean;
 }
 
 interface DispatchProps {
@@ -144,7 +145,7 @@ class MoneyStreamInfo extends React.Component<Props> {
                             </Form.Item>
                         </div>
 
-                        {moneyStream.state === 'waitingForConfirmation' ?
+                        {moneyStream.state === 'waitingForConfirmation' && !this.props.hideConfirm ?
                         <Form.Item>
                             <Button type="default" size="large" block onClick={this.handleConfirm}>
                                 Confirm

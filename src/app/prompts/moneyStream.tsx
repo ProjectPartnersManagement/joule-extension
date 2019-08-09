@@ -44,14 +44,14 @@ class MoneyStreamPrompt extends React.Component<Props, OwnState> {
         console.log('Prompt Arguments', this.args);
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.createMoneyStream();
     }
 
     private createMoneyStream = () => {
-        console.log('Current money streams state', this.props.moneyStreams);
-        this.props.createMoneyStream(this.args.moneyStream);
-        console.log('Money Stream State after creating the new one', this.props.moneyStreams);
+        setTimeout(() => {
+            this.props.createMoneyStream(this.args.moneyStream);
+        }, 500);
     };
 
     render() {
@@ -60,17 +60,25 @@ class MoneyStreamPrompt extends React.Component<Props, OwnState> {
                 beforeConfirm={this.handleConfirm}
                 beforeReject={this.handleReject}
             >
-                <MoneyStreamInfo moneyStreamId={this.state.moneyStreamId} key={this.state.moneyStreamId}/>
+                <MoneyStreamInfo moneyStreamId={this.state.moneyStreamId} hideConfirm={true} key={this.state.moneyStreamId}/>
             </PromptTemplate>
         );
     }
 
-    private handleConfirm = () => {
+    private handleConfirm = async () => {
         console.log('Money Stream State on confirm', this.props.moneyStreams);
         this.props.updateMoneyStream({
             id: this.state.moneyStreamId,
             state: 'open'
         });
+
+        // Wait for 1 second to allow changes to be written to the sync storage.
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 1000);
+        });
+
         if (this.props.close) {
             this.props.close();
         }

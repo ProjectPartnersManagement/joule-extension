@@ -9,7 +9,7 @@ export interface MoneyStream {
     amount_per_unit: number;
     payment_interval: number;
     payment_interval_unit: 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year';
-    state: 'waitingForConfirmation' | 'open' | 'closed';
+    state: 'waitingForConfirmation' | 'open' | 'closed' | 'paused';
     created_at: number; // Unix timestamp
 }
 
