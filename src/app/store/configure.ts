@@ -3,6 +3,7 @@ import createSagaMiddleware from 'redux-saga';
 import { composeWithDevTools } from 'remote-redux-devtools';
 import rootReducer, { AppState, combineInitialState } from './reducers';
 import rootSaga from './sagas';
+import {browser} from "webextension-polyfill-ts/src/generated/index";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -25,6 +26,16 @@ export function configureStore(initialState: Partial<AppState> = combineInitialS
   );
 
   sagaMiddleware.run(rootSaga);
+
+  // Listen for changes to Money Streams. Those changes must occur in all open Joule windows.
+  browser.runtime.onMessage.addListener((request: any) => {
+      // Only handle Joule-internal requests that contain dispatch data.
+      if(!request || request.application !== 'Joule' || !request.dispatchData) return;
+
+      // Note the change in this window's store as well.
+      store.dispatch(request.dispatchData);
+  });
+
 
   return { store, persistor: null };
 }

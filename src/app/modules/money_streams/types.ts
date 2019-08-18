@@ -23,7 +23,16 @@ export const intervalUnits = [
     'year',
 ];
 
+// A message sent from the browser via WebLN to Joule.
+export interface MoneyStreamMessage {
+    application: 'Joule';
+    moneyStreamId: MoneyStream['id'];
+    action: MoneyStreamTypes;
+    payload: any;
+}
+
 enum MoneyStreamTypes {
+    GET_MONEY_STREAM = 'GET_MONEY_STREAM',
     CREATE_MONEY_STREAM = 'CREATE_MONEY_STREAM',
     UPDATE_MONEY_STREAM = 'UPDATE_MONEY_STREAM',
     DELETE_MONEY_STREAM = 'DELETE_MONEY_STREAM',

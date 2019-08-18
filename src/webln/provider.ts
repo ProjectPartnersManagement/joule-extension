@@ -90,6 +90,18 @@ export default class JouleWebLNProvider implements WebLNProvider {
       });
   }
 
+  async stopMoneyStream(moneyStreamId: MoneyStream['id']) {
+      return this.sendMessageMoneyStream(moneyStreamId, 'STOP_MONEY_STREAM');
+  }
+
+  async resumeMoneyStream(moneyStreamId: MoneyStream['id']) {
+      return this.sendMessageMoneyStream(moneyStreamId, 'RESUME_MONEY_STREAM');
+  }
+
+  async getMoneyStream(moneyStreamId: MoneyStream['id']) {
+      return this.sendMessageMoneyStream(moneyStreamId, 'GET_MONEY_STREAM');
+  }
+
   async signMessage(message: string) {
     if (!this.isEnabled) {
       throw new Error('Provider must be enabled before calling signMessage');
@@ -145,6 +157,35 @@ export default class JouleWebLNProvider implements WebLNProvider {
 
       window.addEventListener('message', handleWindowMessage);
     });
+  }
+
+  async sendMessageMoneyStream(moneyStreamId: MoneyStream['id'], action: 'STOP_MONEY_STREAM' | 'RESUME_MONEY_STREAM' | 'GET_MONEY_STREAM') {
+      return new Promise((resolve, reject) => {
+          function handleWindowMessage(ev: MessageEvent) {
+              if (!ev.data || ev.data.application !== 'Joule' || ev.data.prompt || ev.data.action !== action || ev.data.moneyStreamId !== moneyStreamId) {
+                  return;
+              }
+              if (ev.data.error) {
+                  reject(ev.data.error);
+              } else {
+                  resolve(ev.data.data);
+              }
+              window.removeEventListener('message', handleWindowMessage);
+          }
+          window.addEventListener('message', handleWindowMessage);
+
+          window.postMessage(
+              {
+                  application: 'Joule',
+                  prompt: false,
+                  type: action,
+                  args: {
+                      moneyStreamId
+                  },
+              },
+              '*',
+          );
+      });
   }
 }
 

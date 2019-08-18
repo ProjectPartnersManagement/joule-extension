@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import { AppState } from 'store/reducers';
 import MoneyStreamRow from 'components/MoneyStreamList/MoneyStreamRow';
 import {MoneyStream} from 'modules/money_streams/types';
+import runSelector from "../../../content_script/runSelector";
+import {selectSettings} from "modules/settings/selectors";
 
 interface StateProps {
   moneyStreams: AppState['moneyStreams']['moneyStreams'];
@@ -18,7 +20,9 @@ interface OwnProps {
 type Props = StateProps & DispatchProps & OwnProps;
 
 class MoneyStreamList extends React.Component<Props> {
-  componentWillMount() {
+  async componentWillMount() {
+      const moneyStreamList = await runSelector(selectSettings, 'settings', 'settings');
+      console.log('Money Stream List', moneyStreamList);
   }
 
   render() {
