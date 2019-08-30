@@ -10,91 +10,87 @@ import {connect} from 'react-redux';
 import {MoneyStream} from 'modules/money_streams/types';
 
 interface StateProps {
-  chain: ReturnType<typeof getNodeChain>;
+    chain: ReturnType<typeof getNodeChain>;
 }
 
 interface OwnProps {
-  moneyStream: MoneyStream;
-  onClick?(source: MoneyStream): void;
+    moneyStream: MoneyStream;
+
+    onClick?(source: MoneyStream): void;
 }
 
 type Props = StateProps & OwnProps;
 
 class TransactionRow extends React.Component<Props> {
-  render() {
-    const {
-      moneyStream,
-      onClick,
-    } = this.props;
+    render() {
+        const {
+            moneyStream,
+            onClick,
+        } = this.props;
 
-    let stateIcon: JSX.Element;
-    switch(this.getStatus(moneyStream)) {
-        case 'waiting-for-confirmation':
-            stateIcon = <Icon className={`state-icon ${this.getStatus(moneyStream)}`} type="question-circle" />;
-            break;
-        case 'closed':
-            stateIcon = <Icon className={`state-icon ${this.getStatus(moneyStream)}`} type="close-circle" />;
-            break;
-        default:
-        case 'open':
-            // No need to show an icon if the stream is open. This is the default.
-            stateIcon = <span/>;
-            break;
+        let stateIcon: JSX.Element;
+        switch (moneyStream.state) {
+            case 'waitingForConfirmation':
+                stateIcon = <Icon className={`state-icon ${moneyStream.state}`} type="question-circle"/>;
+                break;
+            case 'closed':
+                stateIcon = <Icon className={`state-icon ${moneyStream.state}`} type="close-circle"/>;
+                break;
+            case 'paused':
+                stateIcon = <Icon className={`state-icon ${moneyStream.state}`} type="pause-circle"/>;
+                break;
+            case 'open':
+                stateIcon = <Icon className={`state-icon ${moneyStream.state}`} type="check-circle"/>;
+                break;
+            default:
+                // Unknown state
+                stateIcon = <span/>;
+        }
+
+        return (
+            <div
+                className={classnames('TransactionRow', onClick && 'is-clickable')}
+                onClick={this.handleClick}
+            >
+                <div className="TransactionRow-avatar">
+                    <Identicon className="TransactionRow-avatar-img" pubkey={moneyStream.to.pub_key}/>
+                    <Tooltip title={this.getStatusTooltip(moneyStream)}>
+                        <div className={`TransactionRow-avatar-status is-${moneyStream.state}`}/>
+                        {stateIcon}
+                    </Tooltip>
+                </div>
+                <div className="TransactionRow-info">
+                    <div className="TransactionRow-info-title">{moneyStream.title}</div>
+                    <div className="TransactionRow-info-time">
+                        {moment.unix(moneyStream.created_at).format('MMM Do, LT')}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
-    return (
-      <div
-        className={classnames('TransactionRow', onClick && 'is-clickable')}
-        onClick={this.handleClick}
-      >
-        <div className="TransactionRow-avatar">
-          <Identicon className="TransactionRow-avatar-img" pubkey={moneyStream.to.pub_key} />
-          <Tooltip title={this.getStatusTooltip(moneyStream)}>
-            <div className={`TransactionRow-avatar-status is-${this.getStatus(moneyStream)}`} />
-              {stateIcon}
-          </Tooltip>
-        </div>
-        <div className="TransactionRow-info">
-          <div className="TransactionRow-info-title">{moneyStream.title}</div>
-          <div className="TransactionRow-info-time">
-            {moment.unix(moneyStream.created_at).format('MMM Do, LT')}
-          </div>
-        </div>
-      </div>
-    );
-  }
+    private handleClick = () => {
+        if (this.props.onClick) {
+            this.props.onClick(this.props.moneyStream);
+        }
+    };
 
-  private handleClick = () => {
-    if (this.props.onClick) {
-      this.props.onClick(this.props.moneyStream);
+    private getStatusTooltip(moneyStream: MoneyStream) {
+        switch (moneyStream.state) {
+            case 'waitingForConfirmation':
+                return 'Waiting for confirmation';
+            case 'closed':
+                return 'Stream closed';
+            case 'paused':
+                return 'Stream paused';
+            case 'open':
+                return 'Stream open';
+            default:
+                return 'Unknown status';
+        }
     }
-  };
-
-  private getStatus(moneyStream: MoneyStream) {
-    if(moneyStream.state === 'waitingForConfirmation') {
-        return 'waiting-for-confirmation'
-    }
-    else if(moneyStream.max_amount > moneyStream.used_amount) {
-      return 'open';
-    }
-    else {
-      return 'closed';
-    }
-  }
-
-  private getStatusTooltip(moneyStream: MoneyStream) {
-      switch(this.getStatus(moneyStream)) {
-          case 'waiting-for-confirmation':
-              return 'Waiting for confirmation';
-          case 'closed':
-              return 'Stream closed';
-          default:
-          case 'open':
-              return 'Stream open';
-      }
-  }
 }
 
 export default connect<StateProps, {}, OwnProps, AppState>(state => ({
-  chain: getNodeChain(state),
+    chain: getNodeChain(state),
 }))(TransactionRow);

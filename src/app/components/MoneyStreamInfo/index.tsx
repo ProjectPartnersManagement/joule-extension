@@ -37,6 +37,36 @@ class MoneyStreamInfo extends React.Component<Props> {
         return Math.floor(this.props.moneyStream.max_amount / this.props.moneyStream.amount_per_unit);
     }
 
+    private getConfirmationOrStartStopButtons() {
+        // If the stream is not yet confirmed, only allow confirming or deleting it. Starting and stopping is not allowed.
+        if (this.props.moneyStream.state === 'waitingForConfirmation') {
+            if (!this.props.hideConfirm) {
+                return <Form.Item>
+                    <Button type="default" size="large" block onClick={this.handleConfirm}>
+                        Confirm
+                    </Button>
+                </Form.Item>;
+            }
+            return;
+        }
+        // If the stream is confirmed already, starting it is allowed.
+        else if (this.props.moneyStream.state === 'open') {
+            return <Form.Item>
+                <Button type="default" size="large" block onClick={this.handlePause}>
+                    Pause
+                </Button>
+            </Form.Item>;
+        } else if (this.props.moneyStream.state === 'paused') {
+            return <Form.Item>
+                <Button type="default" size="large" block onClick={this.handleStart}>
+                    Start
+                </Button>
+            </Form.Item>;
+        } else {
+            return;
+        }
+    }
+
     render() {
         const {moneyStream, account} = this.props;
         const blockchainBalance = account ? account.blockchainBalance : 'unknown';
@@ -145,12 +175,7 @@ class MoneyStreamInfo extends React.Component<Props> {
                             </Form.Item>
                         </div>
 
-                        {moneyStream.state === 'waitingForConfirmation' && !this.props.hideConfirm ?
-                        <Form.Item>
-                            <Button type="default" size="large" block onClick={this.handleConfirm}>
-                                Confirm
-                            </Button>
-                        </Form.Item> : ''}
+                        {this.getConfirmationOrStartStopButtons()}
                         <Form.Item>
                             <Button type="danger" size="large" block ghost onClick={this.handleDelete}>
                                 Delete
@@ -158,6 +183,8 @@ class MoneyStreamInfo extends React.Component<Props> {
                         </Form.Item>
                     </Form>
                 </div>
+
+                <div id="moneyStreamId">Money Stream ID: {this.props.moneyStreamId}</div>
             </div>
         );
     }
@@ -216,6 +243,22 @@ class MoneyStreamInfo extends React.Component<Props> {
         this.props.updateMoneyStream({
             id: this.props.moneyStream.id,
             state: 'open'
+        });
+    };
+
+    private handleStart = () => {
+        console.log('Stream started/resumed.');
+        this.props.updateMoneyStream({
+            id: this.props.moneyStream.id,
+            state: 'open'
+        });
+    };
+
+    private handlePause = () => {
+        console.log('Stream paused.');
+        this.props.updateMoneyStream({
+            id: this.props.moneyStream.id,
+            state: 'paused'
         });
     };
 

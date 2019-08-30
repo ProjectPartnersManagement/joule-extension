@@ -1,99 +1,119 @@
-import { browser } from 'webextension-polyfill-ts';
+import {browser} from 'webextension-polyfill-ts';
 import shouldInject from './shouldInject';
 import injectScript from './injectScript';
 import respondWithoutPrompt from './respondWithoutPrompt';
-import { PROMPT_TYPE } from '../webln/types';
-import { getOriginData } from 'utils/prompt';
+import {PROMPT_TYPE} from '../webln/types';
+import {getOriginData} from 'utils/prompt';
 
 if (shouldInject()) {
-  injectScript();
+    injectScript();
 
-  window.addEventListener('message', async ev => {
-      console.log(`Posted message registered`, ev);
-    // Only accept messages from the current window
-    if (ev.source !== window) {
-      return;
-    }
+    window.addEventListener('message', async ev => {
+        // For debugging.
+        ev.origin !== 'https://www.youtube.com' && console.log(`Posted message registered`, ev);
 
-    if (ev.data && ev.data.application === 'Joule' && !ev.data.response) {
-      const messageWithOrigin = {
-        ...ev.data,
-        origin: getOriginData(),
-      };
+        // Only accept messages from the current window
+        if (ev.source !== window) {
+            return;
+        }
 
-      // Some prompt requests can be responded to immediately
-      const didRespond = await respondWithoutPrompt(messageWithOrigin);
-      if (didRespond) {
-        return;
-      }
+        if (ev.data && ev.data.application === 'Joule' && !ev.data.response) {
+            const messageWithOrigin = {
+                ...ev.data,
+                origin: getOriginData(),
+            };
 
-      browser.runtime.sendMessage(messageWithOrigin).then(response => {
-        window.postMessage(
-          {
-            application: 'Joule',
-            response: true,
-            error: response.error,
-            data: response.data,
-          },
-          '*',
-        );
-      });
-    }
-  });
+            // Some prompt requests can be responded to immediately
+            const didRespond = await respondWithoutPrompt(messageWithOrigin);
+            if (didRespond) {
+                return;
+            }
+
+            browser.runtime.sendMessage(messageWithOrigin).then(response => {
+                window.postMessage(
+                    {
+                        application: 'Joule',
+                        response: true,
+                        error: response.error,
+                        data: response.data,
+                    },
+                    '*',
+                );
+            });
+        }
+    });
+
+    // Re-broadcast messages received from within the extension that change the Redux store state. That's important so
+    // the page knows about changes to its money streams that the user executes through the Joule interface.
+    browser.runtime.onMessage.addListener((message) => {
+        console.log('Content script registered Chrome extension message.', message);
+        const action = message.action;
+
+        if (action.isStoreBroadcast) {
+            console.log('Content script registered store broadcast message.', message);
+
+            // Send an event to the rest of the page. This will be processed by WebLN.
+            window.dispatchEvent(new CustomEvent('moneyStreamChangeWithinExtension', {
+                detail: {
+                    storeAction: action
+                }
+            }));
+        }
+    });
 }
 
 // Intercept any `lightning:{paymentReqest}` requests
 // TODO: Get ts to type this function
 if (document) {
-  document.addEventListener('DOMContentLoaded', () => {
-    document.body.addEventListener('click', ev => {
-      const target = ev.target as HTMLElement;
-      if (!target || !target.closest) {
-        return;
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.addEventListener('click', ev => {
+            const target = ev.target as HTMLElement;
+            if (!target || !target.closest) {
+                return;
+            }
 
-      const lightningLink = target.closest('[href^="lightning:"]');
-      if (lightningLink) {
-        const href = lightningLink.getAttribute('href') as string;
-        const paymentRequest = href.replace('lightning:', '');
-        browser.runtime.sendMessage({
-          application: 'Joule',
-          prompt: true,
-          type: PROMPT_TYPE.PAYMENT,
-          origin: getOriginData(),
-          args: { paymentRequest },
+            const lightningLink = target.closest('[href^="lightning:"]');
+            if (lightningLink) {
+                const href = lightningLink.getAttribute('href') as string;
+                const paymentRequest = href.replace('lightning:', '');
+                browser.runtime.sendMessage({
+                    application: 'Joule',
+                    prompt: true,
+                    type: PROMPT_TYPE.PAYMENT,
+                    origin: getOriginData(),
+                    args: {paymentRequest},
+                });
+                ev.preventDefault();
+            }
         });
-        ev.preventDefault();
-      }
     });
-  });
 
-  // Listen for right-click events to show the context menu item
-  // when a potential lightning invoice is selected
-  document.addEventListener(
-    'mousedown',
-    event => {
-      // 2 = right mouse button. may be better to store in a constant
-      if (event.button === 2) {
-        let paymentRequest = window.getSelection().toString();
-        // if nothing selected, try to get the text of the right-clicked element.
-        if (!paymentRequest && event.target) {
-          // Cast as HTMLInputElement to get the value if a form element is used
-          // since innerText will be blank.
-          const target = event.target as HTMLInputElement;
-          paymentRequest = target.innerText || target.value;
-        }
-        if (paymentRequest) {
-          // Send message to background script to toggle the context menu item
-          // based on the content of the right-clicked text
-          browser.runtime.sendMessage({
-            application: 'Joule',
-            contextMenu: true,
-            args: { paymentRequest },
-          });
-        }
-      }
-    },
-    true,
-  );
+    // Listen for right-click events to show the context menu item
+    // when a potential lightning invoice is selected
+    document.addEventListener(
+        'mousedown',
+        event => {
+            // 2 = right mouse button. may be better to store in a constant
+            if (event.button === 2) {
+                let paymentRequest = window.getSelection().toString();
+                // if nothing selected, try to get the text of the right-clicked element.
+                if (!paymentRequest && event.target) {
+                    // Cast as HTMLInputElement to get the value if a form element is used
+                    // since innerText will be blank.
+                    const target = event.target as HTMLInputElement;
+                    paymentRequest = target.innerText || target.value;
+                }
+                if (paymentRequest) {
+                    // Send message to background script to toggle the context menu item
+                    // based on the content of the right-clicked text
+                    browser.runtime.sendMessage({
+                        application: 'Joule',
+                        contextMenu: true,
+                        args: {paymentRequest},
+                    });
+                }
+            }
+        },
+        true,
+    );
 }

@@ -1,4 +1,4 @@
-import {Store} from "redux";
+import {AnyAction, Store} from "redux";
 import {AppState} from "store/reducers";
 import {browser} from "webextension-polyfill-ts/src/generated/index";
 import MoneyStreamTypes, {MoneyStream, MoneyStreamMessage} from "modules/money_streams/types";
@@ -20,22 +20,19 @@ export function handleMoneyStreamMessages(store: Store<AppState>) {
         //     return Promise.resolve({moneyStream: existingMoneyStream});
         // }
 
-        if (!MoneyStreamTypes[request.action]) {
-            return Promise.reject(new Error(`Invalid Money Stream dispatch action "${request.action}".`));
+        if (!MoneyStreamTypes[request.action.type]) {
+            return Promise.reject(new Error(`Invalid Money Stream dispatch action "${request.action.type}".`));
         }
 
-        const dispatchData = {
-            type: request.action,
-            payload: {
-                ...request.payload,
-                id: request.moneyStreamId
-            }
+        const action: AnyAction = {
+            ...request.action,
+            isStoreBroadcast: request.isStoreBroadcast
         };
-        store.dispatch(dispatchData);
+        store.dispatch(action);
         const updatedMoneyStream = getMoneyStreamById(store, request.moneyStreamId);
 
         // Let all applications know about the changed money stream.
-        broadcastStoreChangeWithinExtension(dispatchData);
+        broadcastStoreChangeWithinExtension(action);
 
         return Promise.resolve({
             moneyStream: updatedMoneyStream
@@ -47,10 +44,22 @@ export function handleMoneyStreamMessages(store: Store<AppState>) {
 }
 
 // Send a message to the other extension windows that might be open.
-function broadcastStoreChangeWithinExtension(dispatchData: any) {
-    browser.runtime.sendMessage({
-        dispatchData,
+function broadcastStoreChangeWithinExtension(action: AnyAction) {
+    const message = {
+        action,
         application: 'Joule',
+    };
+    if (!action.isStoreBroadcast) {
+        browser.runtime.sendMessage(message);
+    }
+
+    // Also send the same message to the currently active tab. "lastFocusedWindow: true" is important because the popup
+    // counts as a windows as well, so the current window is not the web page but the extension.
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, function (tabs) {
+        console.log('Currently active tab', tabs);
+        chrome.tabs.sendMessage(tabs[0].id as number, message, function (response) {
+            console.log('Background script received an answer after a store change.', response);
+        });
     });
 }
 

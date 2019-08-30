@@ -27,12 +27,14 @@ export const intervalUnits = [
 export interface MoneyStreamMessage {
     application: 'Joule';
     moneyStreamId: MoneyStream['id'];
-    action: MoneyStreamTypes;
-    payload: any;
+    action: {
+        type: MoneyStreamTypes;
+        payload: Partial<MoneyStream>;
+    };
+    isStoreBroadcast?: boolean;
 }
 
 enum MoneyStreamTypes {
-    GET_MONEY_STREAM = 'GET_MONEY_STREAM',
     CREATE_MONEY_STREAM = 'CREATE_MONEY_STREAM',
     UPDATE_MONEY_STREAM = 'UPDATE_MONEY_STREAM',
     DELETE_MONEY_STREAM = 'DELETE_MONEY_STREAM',

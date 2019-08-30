@@ -49,7 +49,7 @@ export default function moneyStreamsReducers(
                 moneyStreams: clonedMoneyStreams
             };
         case types.DELETE_MONEY_STREAM:
-            // Add the money stream to the list of money streams.
+            // Remove the money stream from the list of money streams.
             clonedMoneyStreams.splice(clonedMoneyStreams.findIndex(moneyStream => moneyStream.id === action.payload.id), 1);
             return {
                 ...state,
